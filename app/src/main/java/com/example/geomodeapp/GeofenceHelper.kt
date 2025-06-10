@@ -37,7 +37,8 @@ class GeofenceHelper @Inject constructor(@ApplicationContext private val context
                 latitude, longitude, radiusInMeters
             )
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT or Geofence.GEOFENCE_TRANSITION_DWELL)
+            .setLoiteringDelay(15000)
             .build()
     }
 

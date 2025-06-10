@@ -19,9 +19,6 @@ class DeviceModeWorker @AssistedInject constructor(
     private val soundModeManager: SoundModeManager
 ) : CoroutineWorker(appContext, params)
 {
-    init {
-        Log.d("TAG", "From WorkManager -> I am instantiated!!")
-    }
 
     override suspend fun doWork(): Result {
 
@@ -31,7 +28,7 @@ class DeviceModeWorker @AssistedInject constructor(
 
         try {
             when(transitionType){
-                Geofence.GEOFENCE_TRANSITION_ENTER ->{
+                Geofence.GEOFENCE_TRANSITION_ENTER,Geofence.GEOFENCE_TRANSITION_DWELL ->{
                     Log.d("TAG"," From WorkManager -> Entered geofence: $requestId")
 
                     val desiredMode= geoModeRepository.readDesiredMode(requestId)
@@ -66,12 +63,21 @@ class DeviceModeWorker @AssistedInject constructor(
                     when(previousMode){
                         GeoProfiles.SILENT ->{
                             soundModeManager.setRingerModeSilent()
+                            if(soundModeManager.isDoNotDisturbEnabled()){
+                                soundModeManager.DisableDoNotDisturb()
+                            }
                         }
                         GeoProfiles.VIBRATE -> {
                             soundModeManager.setRingerModeVibrate()
+                            if(soundModeManager.isDoNotDisturbEnabled()){
+                                soundModeManager.DisableDoNotDisturb()
+                            }
                         }
                         GeoProfiles.NORMAL ->{
                             soundModeManager.setRingerModeNormal()
+                            if(soundModeManager.isDoNotDisturbEnabled()){
+                                soundModeManager.DisableDoNotDisturb()
+                            }
                         }
                         GeoProfiles.DND -> {
                             soundModeManager.DisableDoNotDisturb()
