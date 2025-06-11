@@ -28,7 +28,7 @@ class DeviceModeWorker @AssistedInject constructor(
 
         try {
             when(transitionType){
-                Geofence.GEOFENCE_TRANSITION_ENTER,Geofence.GEOFENCE_TRANSITION_DWELL ->{
+                Geofence.GEOFENCE_TRANSITION_ENTER ->{
                     Log.d("TAG"," From WorkManager -> Entered geofence: $requestId")
 
                     val desiredMode= geoModeRepository.readDesiredMode(requestId)

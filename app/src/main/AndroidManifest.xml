@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY"/>
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
         android:name=".GeoModeApp"
@@ -39,6 +41,11 @@
                 <action android:name="com.example.geomodeapp.ACTION_GEOFENCE_EVENT"/>
             </intent-filter>
         </receiver>
+        <service android:name=".GeofenceService"
+            android:foregroundServiceType="location"
+            android:exported="false">
+
+        </service>
 
         <provider
             android:authorities="${applicationId}.androidx-startup"

@@ -92,13 +92,14 @@ fun HomeScreenUI(
     val context = LocalContext.current
     var isDeleteDialogOpen = remember { mutableStateOf(false) }
     var longPressedCard = remember { mutableStateOf("") }
-    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    val notificationManager =
+        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     var geoFenceList = geoModeViewModel.geoModesList.collectAsState()
 
 
-    LaunchedEffect(geoFenceList.value.size){
-        if(geoFenceList.value.isNotEmpty()){
+    LaunchedEffect(geoFenceList.value.size) {
+        if (geoFenceList.value.isNotEmpty()) {
             delay(
                 timeMillis = 900
             )
@@ -131,6 +132,26 @@ fun HomeScreenUI(
         }
     )
 
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            checkAllPermissions()
+        } else {
+            if (!ActivityCompat.shouldShowRequestPermissionRationale(
+                    context as Activity,
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
+            ) {
+                Toast.makeText(
+                    context,
+                    "Please grant location permissions from settings",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
     val backgroundLocationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
@@ -155,13 +176,24 @@ fun HomeScreenUI(
                 ) == PackageManager.PERMISSION_GRANTED
             else true
 
+        val isNotificationPermissionGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+
         if (!isLocationGranted) {
             locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             return@checkAllPermissions
         }
 
+
         if (!isBackgroundLocationGranted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            return@checkAllPermissions
+        }
+
+        if(!isNotificationPermissionGranted){
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             return@checkAllPermissions
         }
 
@@ -290,7 +322,7 @@ fun HomeScreenUI(
         }
     }
 
-    if(isDeleteDialogOpen.value){
+    if (isDeleteDialogOpen.value) {
         DeleteDialog(
             longPressedCard.value,
             onCancelPressed = {
@@ -393,7 +425,7 @@ fun CardView(
 }
 
 @Composable
-fun DeleteDialog(locationName: String, onCancelPressed: () -> Unit, onDeletePressed:() -> Unit) {
+fun DeleteDialog(locationName: String, onCancelPressed: () -> Unit, onDeletePressed: () -> Unit) {
     Dialog(
         onDismissRequest = {
             onCancelPressed()
@@ -502,7 +534,7 @@ fun DeleteDialog(locationName: String, onCancelPressed: () -> Unit, onDeletePres
 }
 
 
-fun checkForBatteryOptimizer(context: Context){
+fun checkForBatteryOptimizer(context: Context) {
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         val packageName = context.packageName
@@ -511,7 +543,11 @@ fun checkForBatteryOptimizer(context: Context){
         val isIgnoringOptimization = powerManager.isIgnoringBatteryOptimizations(packageName)
 
         if (!isIgnoringOptimization) {
-            Toast.makeText(context, "Please 'Don't optimize' battery for this app.", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                context,
+                "Please 'Don't optimize' battery for this app.",
+                Toast.LENGTH_LONG
+            ).show()
             val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
             context.startActivity(intent)
         }
